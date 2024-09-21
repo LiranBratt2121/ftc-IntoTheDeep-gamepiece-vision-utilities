@@ -44,6 +44,7 @@ def detect_gamePiece(mask: cv2.UMat, min_area=MIN_AREA):
     
     return sorted(locations, key=lambda cnt: cnt['area'])
 
+
 def get_yaw(frame: cv2.UMat | np.ndarray, target_center_x: float) -> float:
     frame_width: float = frame.shape[0]
     frame_center_x = frame_width // 2
@@ -52,6 +53,7 @@ def get_yaw(frame: cv2.UMat | np.ndarray, target_center_x: float) -> float:
     yaw = (offset_x / (frame_width / 2)) * (FOV_HORIZONTAL / 2)
     
     return yaw
+   
     
 def calculate_distance(perceived_widthPX: float):
     return (KNOWN_WIDTH_CM * KNOWN_DISTANCE_CM) / perceived_widthPX
