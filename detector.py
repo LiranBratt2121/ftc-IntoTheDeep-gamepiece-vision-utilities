@@ -60,8 +60,10 @@ def get_yaw(frame: cv2.UMat | np.ndarray, target_center_x: float) -> float:
     yaw = (offset_x / (frame_width / 2)) * (FOV_HORIZONTAL / 2)
     
     return yaw
-   
-    
+
+def display(frame: cv2.UMat | np.ndarray, x: int, y: int, w: int, h: int):
+    cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 4)
+
 def calculate_distance(perceived_widthPX: float):
     return (KNOWN_WIDTH_CM * KNOWN_DISTANCE_CM) / perceived_widthPX
             
