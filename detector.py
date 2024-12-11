@@ -7,24 +7,31 @@ from constants import KNOWN_DISTANCE_CM, KNOWN_WIDTH_CM, MIN_AREA
 from constants import FOV_HORIZONTAL
 
 def mask_gamePiece(frame: cv2.Mat, color: Color):
-    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-    
+    blur = cv2.GaussianBlur(frame, (5, 5), 0)
+
+    hsv = cv2.cvtColor(blur, cv2.COLOR_BGR2HSV)
+
     match color:
         case Color.RED:
             mask1 = cv2.inRange(hsv, RED_LOWER1, RED_UPPER1)
             mask2 = cv2.inRange(hsv, RED_LOWER2, RED_UPPER2)
-            
-            return cv2.bitwise_or(mask1, mask2)
+            mask = cv2.bitwise_or(mask1, mask2)
 
         case Color.BLUE:
-            return cv2.inRange(hsv, BLUE_LOWER, BLUE_UPPER)
-        
+            mask = cv2.inRange(hsv, BLUE_LOWER, BLUE_UPPER)
+
         case Color.YELLOW:
-            return cv2.inRange(hsv, YELLOW_LOWER, YELLOW_UPPER)
-        
+            mask = cv2.inRange(hsv, YELLOW_LOWER, YELLOW_UPPER)
+
         case _:
             raise ValueError("Color not found, use Color.[RED, BLUE, YELLOW]")
-        
+
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (5, 5))
+    mask = cv2.morphologyEx(mask, cv2.MORPH_CLOSE, kernel)
+    mask = cv2.morphologyEx(mask, cv2.MORPH_OPEN, kernel)
+
+    return mask
+
 
 def detect_gamePiece(mask: cv2.UMat, min_area=MIN_AREA):
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
