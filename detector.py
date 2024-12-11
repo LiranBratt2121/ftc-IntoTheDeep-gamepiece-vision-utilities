@@ -61,6 +61,22 @@ def get_yaw(frame: cv2.UMat | np.ndarray, target_center_x: float) -> float:
     
     return yaw
 
+
+def calculate_center_distance(frame: np.ndarray, target_center):
+    frame_height, frame_width = frame.shape[:2]
+    frame_center_x = frame_width // 2
+
+    piece_center_x, _ = target_center
+
+    distance_x = piece_center_x - frame_center_x
+
+    return {
+        "distance_x": distance_x,
+        "abs_distance_x": abs(distance_x),
+        "direction": "right" if distance_x > 0 else "left",
+    }
+
+
 def display(frame: cv2.UMat | np.ndarray, x: int, y: int, w: int, h: int):
     cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 4)
 
