@@ -68,6 +68,11 @@ def fill_and_detect_gamePiece(mask: cv2.UMat, min_area=MIN_AREA):
             cv2.drawContours(filled_mask, [contour], -1, 255, thickness=cv2.FILLED)
 
             x, y, w, h = cv2.boundingRect(contour)
+            box = get_rectangle_points(contour)
+
+            if len(box) > 3:
+                angle = get_rotation_angle(box[0], box[3])
+
             center_x = x + w // 2
             center_y = y + h // 2
             locations.append(
@@ -75,11 +80,22 @@ def fill_and_detect_gamePiece(mask: cv2.UMat, min_area=MIN_AREA):
                     "center": (center_x, center_y),
                     "boundingRect": (x, y, w, h),
                     "area": area,
+                    "rotatedRectPoints": box,
+                    "angle": angle or None
                 }
             )
 
     return filled_mask, sorted(locations, key=lambda cnt: cnt["area"], reverse=True)
 
+def get_rectangle_points(cnt):
+    rect = cv2.minAreaRect(cnt)
+    box = cv2.boxPoints(rect)
+    box = np.int32(box)
+    print(rect[-1])
+    return box
+
+def draw_line(frame, p1, p2):
+    cv2.line(frame, p1, p2, [255, 255, 255], 1)
 
 def get_yaw(frame: cv2.UMat | np.ndarray, target_center_x: float) -> float:
     frame_width: float = frame.shape[0]
@@ -109,6 +125,21 @@ def calculate_center_distance(frame: np.ndarray, target_center):
 def display(frame: cv2.UMat | np.ndarray, x: int, y: int, w: int, h: int):
     cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 4)
 
+def display_rotated(frame, box):
+    for i, b in enumerate(box):
+        cv2.putText(frame, f'{i}, {b}', b, 5, 1, [0, 255, 0])
+        
+    cv2.drawContours(frame, [box.astype(int)], 0, (0, 0, 255), 2)
+
+def display_angle(frame, angle):
+    cv2.putText(frame, f'Angle: {angle}', (50, 100), 1, 1, [0, 0, 255], 4)
+
+def get_rotation_angle(b0, b3):
+    x1, y1 = b0 
+    x2, y2 = b3
+    m = (y1 - y2) / (x1 - x2)
+    angle = np.atan(m)
+    return np.degrees([angle])[0] 
 
 def calculate_distance(perceived_widthPX: float):
     return (KNOWN_WIDTH_CM * KNOWN_DISTANCE_CM) / perceived_widthPX
