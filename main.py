@@ -3,12 +3,14 @@ from constants import Color
 from detector import (
     calculate_center_distance,
     display,
+    display_angle,
+    display_rotated,
     fill_and_detect_gamePiece,
     mask_gamePiece,
 )
 
 
-cap = cv2.VideoCapture(1)
+cap = cv2.VideoCapture(0)
 print("Initialized capture device")
 
 while True:
@@ -17,7 +19,7 @@ while True:
     if not ret:
         break
 
-    for color in [Color.YELLOW, Color.RED, Color.BLUE]:
+    for color in [Color.BLUE]:
         current_frame = frame.copy()
         mask = mask_gamePiece(current_frame, color)
         filled_mask, locations = fill_and_detect_gamePiece(mask)
@@ -25,6 +27,10 @@ while True:
         if len(locations) > 0:
             target = locations[0]
             display(current_frame, *target["boundingRect"])
+
+            if len(target["rotatedRectPoints"]) > 0:
+                display_rotated(current_frame, target["rotatedRectPoints"])
+                display_angle(current_frame, target["angle"])
 
             center_distance = calculate_center_distance(current_frame, target["center"])
 
